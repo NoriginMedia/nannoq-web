@@ -1,11 +1,11 @@
 package com.nannoq.tools.web.controllers;
 
-import com.nannoq.tools.repository.RedisUtils;
-import com.nannoq.tools.repository.Repository;
 import com.nannoq.tools.repository.models.Cacheable;
 import com.nannoq.tools.repository.models.ETagable;
 import com.nannoq.tools.repository.models.Model;
 import com.nannoq.tools.repository.models.ModelUtils;
+import com.nannoq.tools.repository.repository.RedisUtils;
+import com.nannoq.tools.repository.repository.Repository;
 import com.nannoq.tools.repository.utils.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
