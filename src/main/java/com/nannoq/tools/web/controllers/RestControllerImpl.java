@@ -678,7 +678,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
         });
     }
 
-    JsonObject getAndVerifyId(RoutingContext routingContext) {
+    protected JsonObject getAndVerifyId(RoutingContext routingContext) {
         return idSupplier.apply(routingContext);
     }
 
