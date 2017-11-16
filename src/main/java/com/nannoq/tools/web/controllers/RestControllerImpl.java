@@ -6,6 +6,7 @@ import com.nannoq.tools.repository.models.Model;
 import com.nannoq.tools.repository.models.ModelUtils;
 import com.nannoq.tools.repository.repository.RedisUtils;
 import com.nannoq.tools.repository.repository.Repository;
+import com.nannoq.tools.repository.repository.results.*;
 import com.nannoq.tools.repository.utils.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -161,9 +162,14 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                 }
             } else {
                 String etag = routingContext.request().getHeader(HttpHeaders.IF_NONE_MATCH);
-                E item = result.result();
+                ItemResult<E> itemResult = result.result();
+                E item = itemResult.getItem();
 
                 routingContext.response().putHeader(HttpHeaders.ETAG, item.getEtag());
+                routingContext.response().putHeader("X-Cache", itemResult.isCacheHit() ? "HIT" : "MISS");
+                routingContext.response().putHeader("X-Repository-Pre-Operation-Nanos", "" + itemResult.getPreOperationProcessingTime());
+                routingContext.response().putHeader("X-Repository-Operation-Nanos", "" + itemResult.getOperationProcessingTime());
+                routingContext.response().putHeader("X-Repository-Post-Operation-Nanos", "" + itemResult.getPostOperationProcessingTime());
 
                 if (etag != null && item.getEtag().equalsIgnoreCase(etag)) {
                     unChangedShow(routingContext);
@@ -411,7 +417,13 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
                 failedIndex(routingContext, new JsonObject().put("error", "Service unavailable..."));
             } else {
-                ItemList<E> items = readResult.result();
+                ItemListResult<E> itemsResult = readResult.result();
+                ItemList<E> items = itemsResult.getItemList();
+
+                routingContext.response().putHeader("X-Cache", itemsResult.isCacheHit() ? "HIT" : "MISS");
+                routingContext.response().putHeader("X-Repository-Pre-Operation-Nanos", "" + itemsResult.getPreOperationProcessingTime());
+                routingContext.response().putHeader("X-Repository-Operation-Nanos", "" + itemsResult.getOperationProcessingTime());
+                routingContext.response().putHeader("X-Repository-Post-Operation-Nanos", "" + itemsResult.getPostOperationProcessingTime());
 
                 if (items != null) {
                     routingContext.response().putHeader(HttpHeaders.ETAG, items.getEtag());
@@ -575,7 +587,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
                 failedCreate(routingContext, errorObject);
             } else {
-                E finalRecord = result.result();
+                CreateResult<E> finalRecordResult = result.result();
+                E finalRecord = finalRecordResult.getItem();
 
                 routingContext.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
@@ -618,7 +631,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                 if (readResult.failed()) {
                     setStatusCodeAndAbort(404, routingContext, initialProcessNanoTime);
                 } else {
-                    E record = readResult.result();
+                    E record = readResult.result().getItem();
 
                     preSanitizeForUpdate(record, newRecord, routingContext);
                 }
@@ -632,7 +645,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
             if (result.failed()) {
                 failedUpdate(routingContext, new JsonObject().put("error", "Unable to update record..."));
             } else {
-                E finalRecord = result.result();
+                UpdateResult<E> finalRecordResult = result.result();
+                E finalRecord = finalRecordResult.getItem();
 
                 routingContext.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
@@ -657,7 +671,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
                     setStatusCodeAndAbort(404, routingContext, initialProcessNanoTime);
                 } else {
-                    postVerifyExistsForDestroy(readResult.result(), routingContext);
+                    postVerifyExistsForDestroy(readResult.result().getItem(), routingContext);
                 }
             });
         }
@@ -671,7 +685,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
             if (result.failed()) {
                 failedDestroy(routingContext, new JsonObject().put("error", "Unable to destroy record!"));
             } else {
-                E finalRecord = result.result();
+                DeleteResult<E> finalRecordResult = result.result();
+                E finalRecord = finalRecordResult.getItem();
 
                 postDestroy(finalRecord, routingContext);
             }
