@@ -29,7 +29,11 @@ import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.addLogMessa
 import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONTENT_TAG;
 
 /**
- * Created by anders on 01/08/16.
+ * This interface defines the RestController. It defines a chain of operations for CRUD and Index operations. Overriding
+ * functions must remember to call the next element in the chain.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public interface RestController<E extends ETagable & Model & Cacheable> {
     default void show(RoutingContext routingContext) {

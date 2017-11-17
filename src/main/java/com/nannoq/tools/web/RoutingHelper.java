@@ -27,7 +27,10 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Created by anders on 08/08/16.
+ * This class contains helper methods for routing requests.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public class RoutingHelper {
     private static final Logger logger = LoggerFactory.getLogger(RoutingHelper.class.getSimpleName());

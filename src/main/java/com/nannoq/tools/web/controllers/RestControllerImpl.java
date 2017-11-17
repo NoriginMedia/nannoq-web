@@ -39,7 +39,12 @@ import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONT
 import static java.util.stream.Collectors.toList;
 
 /**
- * Created by anders on 01/08/16.
+ * This interface defines the default RestControllerImpl. It prepares queries and builds responses. Standard model
+ * operations need not override anything to use this controller. Overriding functions must remember to call the next
+ * element in the chain.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable> implements RestController<E> {
     static final Logger logger = LoggerFactory.getLogger(RestControllerImpl.class.getSimpleName());

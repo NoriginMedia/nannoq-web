@@ -15,17 +15,18 @@ import java.util.function.Consumer;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.addLogMessageToRequestLog;
 
 /**
- * Created by anders on 02/08/16.
+ * This class defines the EtagVerificationHandler which is used to return all etaged requests on a hit.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public class ETagVerificationHandler implements Handler<RoutingContext> {
     private static final Logger logger = LoggerFactory.getLogger(ETagVerificationHandler.class.getSimpleName());
 
     private final String RSC_ID;
-    private final Class TYPE;
     private final RedisClient REDIS_CLIENT;
 
-    public ETagVerificationHandler(Vertx vertx, Class type, String resourceIdentifier, JsonObject appConfig) {
-        this.TYPE = type;
+    public ETagVerificationHandler(Vertx vertx, String resourceIdentifier, JsonObject appConfig) {
         this.RSC_ID = resourceIdentifier;
         this.REDIS_CLIENT = RedisUtils.getRedisClient(vertx, appConfig);
     }

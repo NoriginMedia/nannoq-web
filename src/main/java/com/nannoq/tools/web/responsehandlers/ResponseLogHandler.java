@@ -15,15 +15,17 @@ import java.util.concurrent.TimeUnit;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.*;
 
 /**
- * Created by anders on 08/08/16.
+ * This interface defines the ResponseLogHandler. It starts the logging process, to be concluded by the
+ * responseloghandler.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public class ResponseLogHandler implements Handler<RoutingContext> {
     private static final Logger logger = LoggerFactory.getLogger(ResponseLogHandler.class.getSimpleName());
 
     public static final String BODY_CONTENT_TAG = "bodyContent";
     public static final String DEBUG_INFORMATION_OBJECT = "debugInfo";
-
-    private static final Queue<String> REQUEST_LOG_QUEUE = new ConcurrentLinkedQueue<>();
 
     @Override
     public void handle(RoutingContext routingContext) {
@@ -111,24 +113,16 @@ public class ResponseLogHandler implements Handler<RoutingContext> {
     private static void outputLog(int statusCode, StringBuffer sb) {
         if (statusCode == 200) {
             if (logger.isDebugEnabled()) {
-                REQUEST_LOG_QUEUE.add(sb.toString());
+                logger.error(sb.toString());
             }
         } else if (statusCode >= 400 && statusCode < 500) {
-            REQUEST_LOG_QUEUE.add(sb.toString());
+            logger.error(sb.toString());
         } else if (statusCode >= 500) {
-            REQUEST_LOG_QUEUE.add(sb.toString());
+            logger.error(sb.toString());
         } else {
             if (logger.isDebugEnabled()) {
-                REQUEST_LOG_QUEUE.add(sb.toString());
+                logger.debug(sb.toString());
             }
-        }
-
-        String log = REQUEST_LOG_QUEUE.poll();
-
-        while (log != null) {
-            logger.error(log);
-
-            log = REQUEST_LOG_QUEUE.poll();
         }
     }
 }

@@ -9,7 +9,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.rmi.server.UID;
 
 /**
- * Created by anders on 08/08/16.
+ * This interface defines the RequestLogHandler. It starts the logging process, to be concluded by the
+ * responseloghandler.
+ *
+ * @author Anders Mikkelsen
+ * @version 17.11.2017
  */
 public class RequestLogHandler implements Handler<RoutingContext> {
     private static final Logger logger = LoggerFactory.getLogger(RequestLogHandler.class.getSimpleName());
