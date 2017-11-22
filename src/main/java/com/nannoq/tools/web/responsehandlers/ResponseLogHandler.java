@@ -8,8 +8,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.*;
@@ -68,7 +66,7 @@ public class ResponseLogHandler implements Handler<RoutingContext> {
         sb.append("\nHeaders:\n");
 
         routingContext.request().headers().forEach(var -> {
-            if (var.getKey().equalsIgnoreCase("Authorization")) {
+            if (var.getKey().equalsIgnoreCase("Authorization") || var.getKey().equalsIgnoreCase("X-Forwarded-For")) {
                 sb.append(var.getKey()).append(" : ").append("[FILTERED]").append("\n");
             } else {
                 sb.append(var.getKey()).append(" : ").append(var.getValue()).append("\n");

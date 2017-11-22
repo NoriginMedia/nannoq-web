@@ -90,15 +90,10 @@ public class RoutingHelper {
     public static void routeWithAuth(Supplier<Route> routeProducer, Handler<RoutingContext> authHandler,
                                      Handler<RoutingContext> finallyHandler,
                                      Consumer<Supplier<Route>> routeSetter) {
-        routeProducer.get().handler(responseTimeHandler);
-        routeProducer.get().handler(timeOutHandler);
-        routeProducer.get().handler(responseContentTypeHandler);
-        routeProducer.get().handler(requestLogger);
+        prependStandards(routeProducer);
         routeProducer.get().handler(authHandler);
         routeSetter.accept(routeProducer);
-        routeProducer.get().failureHandler(RoutingHelper::handleErrors);
-        if (finallyHandler != null) routeProducer.get().handler(finallyHandler);
-        routeProducer.get().handler(responseLogger);
+        appendStandards(routeProducer, finallyHandler);
     }
 
     public static void routeWithBodyHandlerAndAuth(Supplier<Route> routeProducer, Handler<RoutingContext> authHandler,
@@ -106,19 +101,15 @@ public class RoutingHelper {
         routeWithBodyHandlerAndAuth(routeProducer, authHandler, null, routeSetter);
     }
 
+    @SuppressWarnings("Duplicates")
     public static void routeWithBodyHandlerAndAuth(Supplier<Route> routeProducer, Handler<RoutingContext> authHandler,
                                                    Handler<RoutingContext> finallyHandler,
                                                    Consumer<Supplier<Route>> routeSetter) {
-        routeProducer.get().handler(responseTimeHandler);
-        routeProducer.get().handler(timeOutHandler);
-        routeProducer.get().handler(responseContentTypeHandler);
-        routeProducer.get().handler(requestLogger);
+        prependStandards(routeProducer);
         routeProducer.get().handler(bodyHandler);
         routeProducer.get().handler(authHandler);
         routeSetter.accept(routeProducer);
-        routeProducer.get().failureHandler(RoutingHelper::handleErrors);
-        if (finallyHandler != null) routeProducer.get().handler(finallyHandler);
-        routeProducer.get().handler(responseLogger);
+        appendStandards(routeProducer, finallyHandler);
     }
 
     public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
@@ -127,17 +118,26 @@ public class RoutingHelper {
         routeWithBodyHandlerAndAuth(routeProducer, etag, authHandler, routeSetter);
     }
 
+    @SuppressWarnings("Duplicates")
     public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
                                                         ETagVerificationHandler etag, Handler<RoutingContext> authHandler,
                                                         Handler<RoutingContext> finallyHandler,
                                                         Consumer<Supplier<Route>> routeSetter) {
+        prependStandards(routeProducer);
+        routeProducer.get().handler(etag);
+        routeProducer.get().handler(authHandler);
+        routeSetter.accept(routeProducer);
+        appendStandards(routeProducer, finallyHandler);
+    }
+
+    private static void prependStandards(Supplier<Route> routeProducer) {
         routeProducer.get().handler(responseTimeHandler);
         routeProducer.get().handler(timeOutHandler);
         routeProducer.get().handler(responseContentTypeHandler);
         routeProducer.get().handler(requestLogger);
-        routeProducer.get().handler(etag);
-        routeProducer.get().handler(authHandler);
-        routeSetter.accept(routeProducer);
+    }
+
+    private static void appendStandards(Supplier<Route> routeProducer, Handler<RoutingContext> finallyHandler) {
         routeProducer.get().failureHandler(RoutingHelper::handleErrors);
         if (finallyHandler != null) routeProducer.get().handler(finallyHandler);
         routeProducer.get().handler(responseLogger);

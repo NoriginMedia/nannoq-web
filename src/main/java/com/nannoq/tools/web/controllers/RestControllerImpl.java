@@ -36,7 +36,6 @@ import static com.nannoq.tools.web.RoutingHelper.splitQuery;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.REQUEST_PROCESS_TIME_TAG;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.addLogMessageToRequestLog;
 import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONTENT_TAG;
-import static java.util.stream.Collectors.toList;
 
 /**
  * This interface defines the default RestControllerImpl. It prepares queries and builds responses. Standard model
@@ -104,7 +103,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                     if (array != null) {
                         projections = array.stream()
                                 .map(Object::toString)
-                                .collect(toList()).toArray(new String[0]);
+                                .toArray(String[]::new);
 
                         if (logger.isDebugEnabled()) {
                             addLogMessageToRequestLog(routingContext, "Projection ready!");
@@ -268,7 +267,9 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                     JsonArray array = projection.getJsonArray(PROJECTION_FIELDS_KEY, null);
 
                     if (array != null) {
-                        projections = array.stream().map(Object::toString).collect(toList()).toArray(new String[0]);
+                        projections = array.stream()
+                                .map(Object::toString)
+                                .toArray(String[]::new);
 
                         if (logger.isDebugEnabled()) {
                             addLogMessageToRequestLog(routingContext, "Projection ready!");
@@ -286,8 +287,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
             }
 
             postProcessQuery(routingContext, aggregateFunction, orderByQueue, params,
-                    projections == null ? new String[]{} : projections,
-                    indexName == null ? null : indexName[0], limit[0]);
+                    projections == null ? new String[]{} : projections, indexName[0], limit[0]);
         } else {
             JsonObject errorObject = new JsonObject();
             errorObject.put("request_errors", errors);
