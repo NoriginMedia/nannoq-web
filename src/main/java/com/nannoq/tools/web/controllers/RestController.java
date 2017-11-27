@@ -21,9 +21,7 @@ import java.util.Queue;
 import java.util.function.Function;
 
 import static com.nannoq.tools.repository.models.Model.buildValidationErrorObject;
-import static com.nannoq.tools.web.RoutingHelper.denyQuery;
-import static com.nannoq.tools.web.RoutingHelper.setStatusCodeAndAbort;
-import static com.nannoq.tools.web.RoutingHelper.setStatusCodeAndContinue;
+import static com.nannoq.tools.web.RoutingHelper.*;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.REQUEST_PROCESS_TIME_TAG;
 import static com.nannoq.tools.web.requestHandlers.RequestLogHandler.addLogMessageToRequestLog;
 import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONTENT_TAG;

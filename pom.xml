@@ -6,8 +6,34 @@
 
     <groupId>com.nannoq</groupId>
     <artifactId>web</artifactId>
+    <version>1.5.7</version>
     <packaging>jar</packaging>
-    <version>1.5.4</version>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A collection of classes for managing JWT signing and verification on Vert.x</description>
+    <url>https://github.com/AspiroTV/nannoq-auth</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Anders Mikkelsen</name>
+            <email>mikkelsen.anders@gmail.com</email>
+            <organization>Norigin Media</organization>
+            <organizationUrl>https://github.com/mikand13</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/AspiroTV/nannoq-web.git</connection>
+        <developerConnection>scm:git:ssh://github.com:AspiroTV/nannoq-web.git</developerConnection>
+        <url>https://github.com/mikand13/nannoq-web/tree/master</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,10 +41,8 @@
         <vertx.version>3.5.0</vertx.version>
         <hazelcast.version>3.8</hazelcast.version>
         <awssdk.version>1.11.93</awssdk.version>
-        <nannoq.version>1.5.4</nannoq.version>
+        <nannoq.version>1.5.7</nannoq.version>
     </properties>
-
-    <name>Nannoq Web</name>
 
     <dependencies>
         <!-- Nannoq Repository -->
@@ -43,18 +67,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-mongo-client</artifactId>
-            <version>${vertx.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.braintags</groupId>
-            <artifactId>vertx-pojongo</artifactId>
-            <version>1.3.1</version>
         </dependency>
 
         <dependency>
@@ -88,18 +100,6 @@
             <version>${vertx.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>io.vertx</groupId>-->
-        <!--<artifactId>vertx-lang-groovy</artifactId>-->
-        <!--<version>${vertx.version}</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>io.vertx</groupId>-->
-        <!--<artifactId>vertx-lang-ceylon</artifactId>-->
-        <!--<version>${vertx.version}</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-service-proxy</artifactId>
@@ -126,40 +126,6 @@
         </dependency>
 
         <!-- Vertx -->
-
-        <!-- AWS SDK -->
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-core</artifactId>
-            <version>${awssdk.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-sts</artifactId>
-            <version>${awssdk.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-dynamodb</artifactId>
-            <version>${awssdk.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-cloudfront</artifactId>
-            <version>${awssdk.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-dynamodb-encryption-java</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-
-        <!-- AWS SDK -->
 
         <!-- Caching -->
 
@@ -199,8 +165,50 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-gpg-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>install</phase>
+
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
 
                 <configuration>
                     <source>1.8</source>
@@ -226,21 +234,13 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0-M1</version>
-            </plugin>
         </plugins>
     </build>
 
     <reporting>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0-M1</version>
 
                 <configuration>
                     <show>private</show>
