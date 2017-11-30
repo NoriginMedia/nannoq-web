@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>A collection of classes for managing JWT signing and verification on Vert.x</description>
+    <description>A REST controller implementation that leverages nannoq-repository and Vert.x Web.</description>
     <url>https://github.com/AspiroTV/nannoq-web</url>
 
     <licenses>
