@@ -27,6 +27,7 @@ mvn clean verify -Dgpg.skip=true
 A clean implementation expects three parameters.
 
 - The vertx app configuration
+ - For Redis backed etag storage, the configuration should have a parameter "redis_host", and an optional "redis_port".
 - A Repository implementation that is typed to the class use for the RestControllerImpl inheritance
 - A Function that reads the routingcontext and returns a valid idObject based on the path, this is implemented by the client implementation.
 
