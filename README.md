@@ -237,7 +237,7 @@ public class EventsController extends RestControllerImpl<Event> {
 
  projection=%7B%22fields%22%3A%5B%22providerFeedItemId%22%2C%22likeCount%22%2C%22feedId%22%5D%7D
 
- #### Cross-Model Aggregation
+## Cross-Model Aggregation
 
   * All Cross-Model aggregations are automatically scoped to the request feedId, any filtering is on top of this.
   * Aggregation can be performed on any fields that are numerical, whole or decimal, across models.
