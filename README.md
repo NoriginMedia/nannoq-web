@@ -22,26 +22,45 @@ mvn clean test -Dgpg.skip=true
 
 mvn clean verify -Dgpg.skip=true
 
+## Controller implementation
+
+A clean implementation expects three parameters.
+
+- The vertx app configuration
+- A Repository implementation that is typed to the class use for the RestControllerImpl inheritance
+- A Function that reads the routingcontext and returns a valid idObject based on the path, this is implemented by the client implementation.
+
+```
+
+public class EventsController extends RestControllerImpl<Event> {
+    public EventsController(JsonObject appConfig,
+                            Repository<Event> repository, 
+                            Function<RoutingContext, JsonObject> idSupplier) {
+        super(Event.class, appConfig, repository, idSupplier);
+    }
+}
+```
+
 ## Querying
 
 ### All index operations on the API can be performed with finegrained filtering and ordering as well as aggregation with or without grouping, for doing more advanced searches.
 
 #### Filtering
 
-  * Filtering can be performed on any fields of an object. 
-  * All filtering is defined by url encoded json and can be chained for doing multiple filtering operations on a single field.
-  * Available filtering options are:
-    * eq (Equals)
-    * ne (Not Equals)
-    * gt (Greater Than)
-    * lt (Less Than)
-    * ge (Greater or Equal Than)
-    * le (Lesser or Equal Than)
-    * contains (Field contains value)
-    * notContains (Field does not contain value)
-    * beginsWith (Field begins with value (CASE SENSITIVE))
-    * in (Value exists in field)
-    * type (Boolean type (And / Or))
+ * Filtering can be performed on any fields of an object. 
+ * All filtering is defined by url encoded json and can be chained for doing multiple filtering operations on a single field.
+ * Available filtering options are:
+   * eq (Equals)
+   * ne (Not Equals)
+   * gt (Greater Than)
+   * lt (Less Than)
+   * ge (Greater or Equal Than)
+   * le (Lesser or Equal Than)
+   * contains (Field contains value)
+   * notContains (Field does not contain value)
+   * beginsWith (Field begins with value (CASE SENSITIVE))
+   * in (Value exists in field)
+   * type (Boolean type (And / Or))
 
 ##### Examples
 
