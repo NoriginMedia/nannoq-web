@@ -95,9 +95,9 @@ public class EventsController extends RestControllerImpl<Event> {
  commentCount=%5B%7B%22gt%22%3A10000%7D%2C%7B%22lt%22%3A20000%2C%22type%22%3A%22and%22%7D%5D
 #### Ordering
 
-  * Filtering can be performed on any indexed fields of an object. Typically numerical or date fields.
-  * All filtering is defined by url encoded json.
-  * You can only filter on a single index.
+  * Ordering can be performed on any indexed fields of an object. Typically numerical or date fields.
+  * All ordering is defined by url encoded json.
+  * You can only order on a single index.
   * Available ordering options are:
     * field (Field to order by)
     * direction ("asc" or "desc", DESC is default)
