@@ -25,10 +25,7 @@
 
 package com.nannoq.tools.web.controllers;
 
-import com.nannoq.tools.repository.models.Cacheable;
-import com.nannoq.tools.repository.models.ETagable;
-import com.nannoq.tools.repository.models.Model;
-import com.nannoq.tools.repository.models.ValidationError;
+import com.nannoq.tools.repository.models.*;
 import com.nannoq.tools.repository.utils.*;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.Json;
@@ -77,11 +74,16 @@ public interface RestController<E extends ETagable & Model & Cacheable> {
 
     default void postShow(RoutingContext routingContext, E item, @Nonnull String[] projections) {
         long initialNanoTime = routingContext.get(REQUEST_PROCESS_TIME_TAG);
+        String requestEtag = routingContext.request().getHeader("If-None-Match");
 
-        routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        routingContext.put(BODY_CONTENT_TAG, item.toJsonString(projections));
+        if (requestEtag != null && requestEtag.equals(item.getEtag())) {
+            unChangedShow(routingContext);
+        } else {
+            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+            routingContext.put(BODY_CONTENT_TAG, item.toJsonString(projections));
 
-        setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+            setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+        }
     }
 
     default void unChangedShow(RoutingContext routingContext) {
@@ -163,21 +165,32 @@ public interface RestController<E extends ETagable & Model & Cacheable> {
 
     default void postIndex(RoutingContext routingContext, @Nonnull ItemList<E> items, @Nonnull String[] projections) {
         long initialNanoTime = routingContext.get(REQUEST_PROCESS_TIME_TAG);
-        String content = items.toJsonString(projections);
+        String requestEtag = routingContext.request().getHeader("If-None-Match");
 
-        routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        routingContext.put(BODY_CONTENT_TAG, content);
+        if (requestEtag != null && requestEtag.equals(items.getEtag())) {
+            unChangedIndex(routingContext);
+        } else {
+            String content = items.toJsonString(projections);
 
-        setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+            routingContext.put(BODY_CONTENT_TAG, content);
+
+            setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+        }
     }
 
     default void postAggregation(RoutingContext routingContext, @Nonnull String content) {
         long initialNanoTime = routingContext.get(REQUEST_PROCESS_TIME_TAG);
+        String requestEtag = routingContext.request().getHeader("If-None-Match");
 
-        routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        routingContext.put(BODY_CONTENT_TAG, content);
+        if (requestEtag != null && requestEtag.equals(ModelUtils.returnNewEtag(content.hashCode()))) {
+            unChangedIndex(routingContext);
+        } else {
+            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+            routingContext.put(BODY_CONTENT_TAG, content);
 
-        setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+            setStatusCodeAndContinue(200, routingContext, initialNanoTime);
+        }
     }
 
     default void unChangedIndex(RoutingContext routingContext) {

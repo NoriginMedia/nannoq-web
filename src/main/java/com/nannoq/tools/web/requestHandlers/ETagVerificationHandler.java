@@ -25,7 +25,7 @@
 
 package com.nannoq.tools.web.requestHandlers;
 
-import com.nannoq.tools.repository.repository.RedisUtils;
+import com.nannoq.tools.repository.repository.redis.RedisUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;

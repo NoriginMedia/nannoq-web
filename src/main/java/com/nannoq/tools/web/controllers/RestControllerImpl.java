@@ -29,7 +29,9 @@ import com.nannoq.tools.repository.models.Cacheable;
 import com.nannoq.tools.repository.models.ETagable;
 import com.nannoq.tools.repository.models.Model;
 import com.nannoq.tools.repository.models.ModelUtils;
-import com.nannoq.tools.repository.repository.RedisUtils;
+import com.nannoq.tools.repository.repository.etag.ETagManager;
+import com.nannoq.tools.repository.repository.etag.RedisETagManagerImpl;
+import com.nannoq.tools.repository.repository.redis.RedisUtils;
 import com.nannoq.tools.repository.repository.Repository;
 import com.nannoq.tools.repository.repository.results.*;
 import com.nannoq.tools.repository.utils.*;
@@ -53,6 +55,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
 import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.PAGINATION_INDEX;
+import static com.nannoq.tools.repository.repository.redis.RedisUtils.getRedisClient;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MAX;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MIN;
 import static com.nannoq.tools.web.RoutingHelper.*;
@@ -83,10 +86,10 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
     public static final String CONTROLLER_START_TIME = "controllerStartTimeTag";
 
     protected final Repository<E> REPOSITORY;
-    protected final RedisClient REDIS_CLIENT;
     protected final Class<E> TYPE;
     protected final String COLLECTION;
     protected final Function<RoutingContext, JsonObject> idSupplier;
+    protected final ETagManager<E> eTagManager;
 
     protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier) {
@@ -94,7 +97,12 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
         this.REPOSITORY = repository;
         this.TYPE = type;
         this.COLLECTION = buildCollectionName(type.getName());
-        this.REDIS_CLIENT = RedisUtils.getRedisClient(Vertx.currentContext().owner(), appConfig);
+
+        if (appConfig.getString("redis_host") != null) {
+            this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(Vertx.currentContext().owner(), appConfig));
+        } else {
+            this.eTagManager = null;
+        }
     }
 
     private String buildCollectionName(String typeName) {
@@ -152,7 +160,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                     addLogMessageToRequestLog(routingContext, "Etag is: " + etag);
                 }
 
-                if (etag != null) {
+                if (etag != null && eTagManager != null) {
                     String hash = id.getString("hash");
                     String etagKeyBase = TYPE.getSimpleName() + "_" + hash + "/projections";
                     String key = TYPE.getSimpleName() + "_" + hash + "/projections" + Arrays.hashCode(finalProjections);
@@ -161,15 +169,13 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                         addLogMessageToRequestLog(routingContext, "Checking etag for show...");
                     }
 
-                    RedisUtils.performJedisWithRetry(REDIS_CLIENT, innerRedis ->
-                            innerRedis.hget(etagKeyBase, key, getResult -> {
-                                if (getResult.succeeded() && getResult.result() != null &&
-                                        getResult.result().equals(etag)) {
-                                    unChangedIndex(routingContext);
-                                } else {
-                                    proceedWithRead(routingContext, id, finalProjections);
-                                }
-                            }));
+                    eTagManager.checkItemEtag(etagKeyBase, key, etag, etagRes -> {
+                        if (etagRes.succeeded() && etagRes.result()) {
+                            unChangedIndex(routingContext);
+                        } else {
+                            proceedWithRead(routingContext, id, finalProjections);
+                        }
+                    });
                 } else {
                     proceedWithRead(routingContext, id, finalProjections);
                 }
@@ -412,21 +418,15 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
                     final String[] finalProjections = projections;
 
-                    if (etag != null) {
-                        RedisUtils.performJedisWithRetry(REDIS_CLIENT, innerRedis ->
-                                innerRedis.hget(etagItemListHashKey, etagKey, getResult -> {
-                                    if (logger.isDebugEnabled()) {
-                                        logger.debug("Stored etag: " + getResult.result() + ", request: " + etag);
-                                    }
-
-                                    if (getResult.succeeded() && getResult.result() != null &&
-                                            getResult.result().equals(etag)) {
-                                        unChangedIndex(routingContext);
-                                    } else {
-                                        proceedWithPagedIndex(identifiers, pageToken,
-                                                queryPack, finalProjections, routingContext);
-                                    }
-                                }));
+                    if (etag != null && eTagManager != null) {
+                        eTagManager.checkItemListEtag(etagItemListHashKey, etagKey, etag, etagRes -> {
+                            if (etagRes.succeeded() && etagRes.result()) {
+                                unChangedIndex(routingContext);
+                            } else {
+                                proceedWithPagedIndex(identifiers, pageToken,
+                                        queryPack, finalProjections, routingContext);
+                            }
+                        });
                     } else {
                         proceedWithPagedIndex(identifiers, pageToken, queryPack, finalProjections, routingContext);
                     }
@@ -506,19 +506,19 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
         String finalEtagKey = etagKey;
 
-        if (etag != null) {
+        if (etag != null && eTagManager != null) {
             String hash = id.getString("hash");
             String etagItemListHashKey = TYPE.getSimpleName() + "_" +
                     (hash != null ? hash + "_" : "") +
                     "itemListEtags";
 
-            RedisUtils.performJedisWithRetry(REDIS_CLIENT, ir -> ir.hget(etagItemListHashKey, finalEtagKey, getRes -> {
-                if (getRes.succeeded() && getRes.result() != null && getRes.result().equals(etag)) {
+            eTagManager.checkAggregationEtag(etagItemListHashKey, finalEtagKey, etag, etagRes -> {
+                if (etagRes.succeeded() && etagRes.result()) {
                     unChangedIndex(routingContext);
                 } else {
                     doAggregation(routingContext, id, queryPack, projections);
                 }
-            }));
+            });
         } else {
             doAggregation(routingContext, id, queryPack, projections);
         }
