@@ -42,6 +42,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -91,17 +92,26 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier) {
-        this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier);
+        this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier, null);
+    }
+
+    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
+                                 Function<RoutingContext, JsonObject> idSupplier,
+                                 @Nullable ETagManager<E> eTagManager) {
+        this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier, eTagManager);
     }
 
     protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
-                                 Function<RoutingContext, JsonObject> idSupplier) {
+                                 Function<RoutingContext, JsonObject> idSupplier,
+                                 @Nullable ETagManager<E> eTagManager) {
         this.idSupplier = idSupplier;
         this.REPOSITORY = repository;
         this.TYPE = type;
         this.COLLECTION = buildCollectionName(type.getName());
 
-        if (appConfig.getString("redis_host") != null) {
+        if (eTagManager != null) {
+            this.eTagManager = eTagManager;
+        } else if (appConfig.getString("redis_host") != null) {
             this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(vertx, appConfig));
         } else {
             this.eTagManager = null;
