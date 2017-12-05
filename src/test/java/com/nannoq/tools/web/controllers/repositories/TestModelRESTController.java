@@ -41,7 +41,7 @@ import java.util.function.Function;
 public class TestModelRESTController extends RestControllerImpl<TestModel> {
     public TestModelRESTController(Vertx vertx, JsonObject appConfig, Repository<TestModel> repository,
                                    Function<RoutingContext, JsonObject> idSupplier) {
-        super(vertx, TestModel.class, appConfig, repository, idSupplier);
+        super(vertx, TestModel.class, appConfig, repository, idSupplier, null);
     }
 
     @Override
