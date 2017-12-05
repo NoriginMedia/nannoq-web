@@ -31,13 +31,24 @@ A clean implementation expects three parameters.
 - A Repository implementation that is typed to the class use for the RestControllerImpl inheritance
 - A Function that reads the routingcontext and returns a valid idObject based on the path, this is implemented by the client implementation.
 
+The method postVerifyNotExists method should be overriden to set ids from the path if necessary. E.g. with a DynamoDB implemenation.
+
 ```
 
-public class EventsController extends RestControllerImpl<Event> {
-    public EventsController(JsonObject appConfig,
-                            Repository<Event> repository, 
-                            Function<RoutingContext, JsonObject> idSupplier) {
-        super(Event.class, appConfig, repository, idSupplier);
+public class TestModelRESTController extends RestControllerImpl<TestModel> {
+    public TestModelRESTController(Vertx vertx, JsonObject appConfig, Repository<TestModel> repository,
+                                   Function<RoutingContext, JsonObject> idSupplier) {
+        super(vertx, TestModel.class, appConfig, repository, idSupplier, null);
+    }
+
+    @Override
+    public void postVerifyNotExists(TestModel newRecord, RoutingContext routingContext) {
+        final JsonObject id = getAndVerifyId(routingContext);
+
+        newRecord.setSomeStringOne(id.getString("hash"));
+        newRecord.setSomeStringTwo(UUID.randomUUID().toString());
+
+        super.postVerifyNotExists(newRecord, routingContext);
     }
 }
 ```
