@@ -173,6 +173,18 @@ public class RoutingHelper {
         routeWithLogger(routeProducer, null, routeSetter);
     }
 
+    public static void routeWithBodyAndLogger(Supplier<Route> routeProducer,
+                                       Consumer<Supplier<Route>> routeSetter) {
+        routeProducer.get().handler(responseTimeHandler);
+        routeProducer.get().handler(timeOutHandler);
+        routeProducer.get().handler(responseContentTypeHandler);
+        routeProducer.get().handler(requestLogger);
+        routeProducer.get().handler(bodyHandler);
+        routeSetter.accept(routeProducer);
+        routeProducer.get().failureHandler(RoutingHelper::handleErrors);
+        routeProducer.get().handler(responseLogger);
+    }
+
     public static void routeWithLogger(Supplier<Route> routeProducer,
                                        Handler<RoutingContext> finallyHandler,
                                        Consumer<Supplier<Route>> routeSetter) {

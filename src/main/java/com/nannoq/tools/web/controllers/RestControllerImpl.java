@@ -38,9 +38,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.*;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,7 +70,7 @@ import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONT
  * @version 17.11.2017
  */
 public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable> implements RestController<E> {
-    static final Logger logger = LoggerFactory.getLogger(RestControllerImpl.class.getSimpleName());
+    static final Logger logger = LogManager.getLogger(RestControllerImpl.class.getSimpleName());
 
     public static final String PROJECTION_KEY = "projection";
     public static final String PROJECTION_FIELDS_KEY = "fields";
@@ -91,13 +91,18 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier) {
+        this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier);
+    }
+
+    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
+                                 Function<RoutingContext, JsonObject> idSupplier) {
         this.idSupplier = idSupplier;
         this.REPOSITORY = repository;
         this.TYPE = type;
         this.COLLECTION = buildCollectionName(type.getName());
 
         if (appConfig.getString("redis_host") != null) {
-            this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(Vertx.currentContext().owner(), appConfig));
+            this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(vertx, appConfig));
         } else {
             this.eTagManager = null;
         }
