@@ -1,8 +1,8 @@
-## Welcome to Nannoq Web
+# Nannoq Web
 
 nannoq-web is a REST (Level 3) controller implementation that is based on vertx-web and leverages [nannoq-repository](https://github.com/mikand13/nannoq-repository) for data store access.
 
-### Prerequisites
+## Prerequisites
 
 Vert.x >= 3.5.0
 
@@ -10,19 +10,39 @@ Java >= 1.8
 
 Maven
 
-### Installing
+## Installing
 
 mvn clean package -Dgpg.skip=true
 
-## Running the tests
+### Running the tests
 
 mvn clean test -Dgpg.skip=true
 
-## Running the integration tests
+### Running the integration tests
 
 mvn clean verify -Dgpg.skip=true
 
-## Controller implementation
+## Usage
+
+First install with either Maven:
+
+```
+<dependency>
+    <groupId>com.nannoq</groupId>
+    <artifactId>web</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+or Gradle:
+
+```
+dependencies {
+    compile group: 'nannoq.com:web:1.0.0'
+}
+```
+
+### Controller implementation
 
 A clean implementation expects three parameters.
 
@@ -52,11 +72,11 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 }
 ```
 
-## Querying
+### Querying
 
-### All index operations on the API can be performed with finegrained filtering and ordering as well as aggregation with or without grouping, for doing more advanced searches.
+#### All index operations on the API can be performed with finegrained filtering and ordering as well as aggregation with or without grouping, for doing more advanced searches.
 
-#### Filtering
+### Filtering
 
  * Filtering can be performed on any fields of an object. 
  * All filtering is defined by url encoded json and can be chained for doing multiple filtering operations on a single field.
@@ -73,7 +93,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
    * in (Value exists in field)
    * type (Boolean type (And / Or))
 
-##### Examples
+#### Examples
 
 ```
 
@@ -417,3 +437,17 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
  projection=%7B%22models%22%3A%5B%7B%22model%22%3A%22feedItems%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22providerName%22%2C%22parameters%22%3A%5B%7B%22eq%22%3A%22FACEBOOK%22%20%7D%5D%7D%5D%7D%5D%7D
 
  projection=%7B%22models%22%3A%5B%7B%22model%22%3A%22comments%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22reply%22%2C%22parameters%22%3A%5B%7B%22eq%22%3Atrue%7D%5D%7D%2C%7B%22field%22%3A%22likeCount%22%2C%22parameters%22%3A%5B%7B%22gt%22%3A10000%7D%2C%7B%22lt%22%3A50000%7D%5D%7D%5D%7D%2C%7B%22model%22%3A%22likes%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22userId%22%2C%22parameters%22%3A%5B%7B%22eq%22%3A%224554b1eda02f902beea73cd03c4acb4%22%7D%2C%7B%22eq%22%3A%226ab6c2a487d25c6c314774a845690e6%22%2C%22type%22%3A%22or%22%7D%5D%7D%5D%7D%5D%7D
+ 
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/mikand13/nannoq-web/tags)
+
+## Authors
+
+* **Anders Mikkelsen** - *Initial work* - [Norigin Media](http://noriginmedia.com/)
+
+See also the list of [contributors](https://github.com/mikand13/nannoq-web/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
