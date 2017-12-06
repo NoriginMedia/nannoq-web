@@ -437,7 +437,11 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
  projection=%7B%22models%22%3A%5B%7B%22model%22%3A%22feedItems%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22providerName%22%2C%22parameters%22%3A%5B%7B%22eq%22%3A%22FACEBOOK%22%20%7D%5D%7D%5D%7D%5D%7D
 
  projection=%7B%22models%22%3A%5B%7B%22model%22%3A%22comments%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22reply%22%2C%22parameters%22%3A%5B%7B%22eq%22%3Atrue%7D%5D%7D%2C%7B%22field%22%3A%22likeCount%22%2C%22parameters%22%3A%5B%7B%22gt%22%3A10000%7D%2C%7B%22lt%22%3A50000%7D%5D%7D%5D%7D%2C%7B%22model%22%3A%22likes%22%2C%22fields%22%3A%5B%7B%22field%22%3A%22userId%22%2C%22parameters%22%3A%5B%7B%22eq%22%3A%224554b1eda02f902beea73cd03c4acb4%22%7D%2C%7B%22eq%22%3A%226ab6c2a487d25c6c314774a845690e6%22%2C%22type%22%3A%22or%22%7D%5D%7D%5D%7D%5D%7D
- 
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://github.com/mikand13/nannoq-web/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/mikand13/nannoq-web/tags)
@@ -450,4 +454,4 @@ See also the list of [contributors](https://github.com/mikand13/nannoq-web/contr
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/mikand13/nannoq-web/blob/master/LICENSE) file for details
