@@ -174,7 +174,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                 }
 
                 if (etag != null && eTagManager != null) {
-                    String hash = id.getString("hash");
+                    int hash = id.encode().hashCode();
                     String etagKeyBase = TYPE.getSimpleName() + "_" + hash + "/projections";
                     String key = TYPE.getSimpleName() + "_" + hash + "/projections" + Arrays.hashCode(finalProjections);
 
@@ -418,11 +418,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                 if (queryPack.getAggregateFunction() != null) {
                     proceedWithAggregationIndex(routingContext, etag, identifiers, queryPack, projections);
                 } else {
-                    String hash = identifiers.getString("hash");
-                    String etagItemListHashKey = TYPE.getSimpleName() + "_" +
-                            (hash != null ? hash + "_" : "") +
-                            "itemListEtags";
-
+                    int hash = identifiers.encode().hashCode();
+                    String etagItemListHashKey = TYPE.getSimpleName() + "_" + hash + "_" + "itemListEtags";
                     String etagKey = queryPack.getBaseEtagKey();
 
                     if (logger.isDebugEnabled()) {
@@ -520,10 +517,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
         String finalEtagKey = etagKey;
 
         if (etag != null && eTagManager != null) {
-            String hash = id.getString("hash");
-            String etagItemListHashKey = TYPE.getSimpleName() + "_" +
-                    (hash != null ? hash + "_" : "") +
-                    "itemListEtags";
+            int hash = id.encode().hashCode();
+            String etagItemListHashKey = TYPE.getSimpleName() + "_" + hash + "_" + "itemListEtags";
 
             eTagManager.checkAggregationEtag(etagItemListHashKey, finalEtagKey, etag, etagRes -> {
                 if (etagRes.succeeded() && etagRes.result()) {

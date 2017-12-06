@@ -63,7 +63,9 @@ import static com.nannoq.tools.web.RoutingHelper.routeWithLogger;
 import static io.restassured.RestAssured.given;
 import static java.util.stream.Collectors.toList;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Anders Mikkelsen
@@ -292,10 +294,25 @@ public class RestControllerImplTestIT {
     public void index(TestContext testContext) {
         Async async = testContext.async();
 
-        createXItems(25, createRes -> getPage(null, async));
+        createXItems(25, createRes -> vertx.executeBlocking(fut -> {
+            try {
+                Response response = getIndex(null, null, 200);
+                getIndex(response.header(HttpHeaders.ETAG), null, 304);
+                getIndex(response.header(HttpHeaders.ETAG), null, 200, "?limit=50");
+                getPage(null, fut);
+            } catch (Exception e) {
+                testContext.fail(e);
+            }
+        }, false, res -> {
+            if (res.failed()) {
+                testContext.fail(res.cause());
+            } else {
+                async.complete();
+            }
+        }));
     }
 
-    private void getPage(String pageToken, Async async) {
+    private void getPage(String pageToken, Future<Object> async) {
         Response response = getIndex(null, pageToken, 200);
         String etag = response.header(HttpHeaders.ETAG);
         getIndex(etag, pageToken, 304);
@@ -311,10 +328,17 @@ public class RestControllerImplTestIT {
     }
 
     private Response getIndex(String eTag, String pageToken, int statusCode) {
+        return getIndex(eTag, pageToken, statusCode, null);
+    }
+
+    private Response getIndex(String eTag, String pageToken, int statusCode, String query) {
+        String url = "/parent/testString/testModels" + (query != null ? query : "") +
+                (pageToken != null ? (query != null ? "&" : "?") + "pageToken=" + pageToken : "");
+
         return given().
                 header(HttpHeaders.IF_NONE_MATCH, eTag != null ? eTag : "NoEtag").
             when().
-                get("/parent/testString/testModels" + (pageToken != null ? "?pageToken=" + pageToken : "")).
+                get(url).
             then().
                 statusCode(statusCode).
                     extract().
@@ -346,7 +370,9 @@ public class RestControllerImplTestIT {
     public void update() {
         Response response = createByRest(nonNullTestModel.get());
         TestModel testModel = Json.decodeValue(response.asString(), TestModel.class);
+        String oldEtag = testModel.getEtag();
         response = getResponse(testModel, null, 200);
+        assertEquals(oldEtag, response.header(HttpHeaders.ETAG));
         getResponse(testModel, response.header(HttpHeaders.ETAG), 304);
 
         testModel.setSomeLong(1L);
@@ -361,7 +387,9 @@ public class RestControllerImplTestIT {
                         response();
 
         TestModel updatedTestModel = Json.decodeValue(response.asString(), TestModel.class);
-        testModel = Json.decodeValue(getResponse(testModel, null, 200).asString(), TestModel.class);
+        response = getResponse(testModel, null, 200);
+        testModel = Json.decodeValue(response.asString(), TestModel.class);
+        assertNotEquals(oldEtag, response.header(HttpHeaders.ETAG));
 
         assertEquals(new Long(1L), testModel.getSomeLong());
         assertEquals(new Long(1L), updatedTestModel.getSomeLong());
@@ -374,6 +402,7 @@ public class RestControllerImplTestIT {
         response = getResponse(testModel, null, 200);
         getResponse(testModel, response.header(HttpHeaders.ETAG), 304);
         destroyByRest(testModel);
+        getResponse(testModel, testModel.getEtag(), 404);
         getResponse(testModel, null, 404);
     }
 

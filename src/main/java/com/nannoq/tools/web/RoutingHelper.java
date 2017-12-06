@@ -25,7 +25,6 @@
 
 package com.nannoq.tools.web;
 
-import com.nannoq.tools.web.requestHandlers.ETagVerificationHandler;
 import com.nannoq.tools.web.requestHandlers.RequestLogHandler;
 import com.nannoq.tools.web.responsehandlers.ResponseLogHandler;
 import io.vertx.core.Handler;
@@ -138,18 +137,17 @@ public class RoutingHelper {
     }
 
     public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
-                                                        ETagVerificationHandler etag, Handler<RoutingContext> authHandler,
+                                                        Handler<RoutingContext> authHandler,
                                                         Consumer<Supplier<Route>> routeSetter) {
-        routeWithBodyHandlerAndAuth(routeProducer, etag, authHandler, routeSetter);
+        routeWithBodyHandlerAndAuth(routeProducer, authHandler, routeSetter);
     }
 
     @SuppressWarnings("Duplicates")
     public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
-                                                        ETagVerificationHandler etag, Handler<RoutingContext> authHandler,
+                                                        Handler<RoutingContext> authHandler,
                                                         Handler<RoutingContext> finallyHandler,
                                                         Consumer<Supplier<Route>> routeSetter) {
         prependStandards(routeProducer);
-        routeProducer.get().handler(etag);
         routeProducer.get().handler(authHandler);
         routeSetter.accept(routeProducer);
         appendStandards(routeProducer, finallyHandler);
