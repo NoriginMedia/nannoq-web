@@ -401,9 +401,15 @@ public class RestControllerImplTestIT {
         TestModel testModel = Json.decodeValue(response.asString(), TestModel.class);
         response = getResponse(testModel, null, 200);
         getResponse(testModel, response.header(HttpHeaders.ETAG), 304);
+        response = getIndex(null, null, 200);
+        String etagRoot = response.header(HttpHeaders.ETAG);
+        getIndex(response.header(HttpHeaders.ETAG), null, 304);
+        String etagQuery = getIndex(response.header(HttpHeaders.ETAG), null, 200, "?limit=50").header(HttpHeaders.ETAG);
         destroyByRest(testModel);
         getResponse(testModel, testModel.getEtag(), 404);
         getResponse(testModel, null, 404);
+        getIndex(etagRoot, null, 304);
+        getIndex(etagQuery, null, 304, "?limit=50");
     }
 
     @SuppressWarnings("UnusedReturnValue")

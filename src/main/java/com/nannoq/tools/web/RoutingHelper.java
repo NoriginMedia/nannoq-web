@@ -136,23 +136,6 @@ public class RoutingHelper {
         appendStandards(routeProducer, finallyHandler);
     }
 
-    public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
-                                                        Handler<RoutingContext> authHandler,
-                                                        Consumer<Supplier<Route>> routeSetter) {
-        routeWithBodyHandlerAndAuth(routeProducer, authHandler, routeSetter);
-    }
-
-    @SuppressWarnings("Duplicates")
-    public static void routeWithAuthAndEtagVerification(Supplier<Route> routeProducer,
-                                                        Handler<RoutingContext> authHandler,
-                                                        Handler<RoutingContext> finallyHandler,
-                                                        Consumer<Supplier<Route>> routeSetter) {
-        prependStandards(routeProducer);
-        routeProducer.get().handler(authHandler);
-        routeSetter.accept(routeProducer);
-        appendStandards(routeProducer, finallyHandler);
-    }
-
     private static void prependStandards(Supplier<Route> routeProducer) {
         routeProducer.get().handler(responseTimeHandler);
         routeProducer.get().handler(timeOutHandler);
