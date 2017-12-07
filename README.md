@@ -53,7 +53,7 @@ A clean implementation expects three parameters.
 
 The method postVerifyNotExists method should be overriden to set ids from the path if necessary. E.g. with a DynamoDB implemenation.
 
-```
+```java
 public class TestModelRESTController extends RestControllerImpl<TestModel> {
     public TestModelRESTController(Vertx vertx, JsonObject appConfig, Repository<TestModel> repository,
                                    Function<RoutingContext, JsonObject> idSupplier) {
