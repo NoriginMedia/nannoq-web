@@ -112,7 +112,7 @@ public class RestControllerImplTestIT {
         Async async = testContext.async();
 
         Config hzConfig = new Config() ;
-        hzConfig.setProperty( "hazelcast.logging.type", "log4j2" );
+        hzConfig.setProperty("hazelcast.logging.type", "log4j2");
         HazelcastClusterManager mgr = new HazelcastClusterManager();
         mgr.setConfig(hzConfig);
         VertxOptions options = new VertxOptions().setClusterManager(mgr);
