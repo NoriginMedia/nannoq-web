@@ -26,7 +26,7 @@ mvn clean verify -Dgpg.skip=true
 
 First install with either Maven:
 
-```
+```xml
 <dependency>
     <groupId>com.nannoq</groupId>
     <artifactId>web</artifactId>
@@ -36,7 +36,7 @@ First install with either Maven:
 
 or Gradle:
 
-```
+```groovy
 dependencies {
     compile group: 'nannoq.com:web:1.0.0'
 }
@@ -95,8 +95,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 #### Examples
 
-```
-
+```javascript
 {
   "eq":15000
 }
@@ -135,8 +134,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ##### Examples
 
-```
-
+```javascript
 {
   "field":"commentCount"
 }
@@ -173,8 +171,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
     * MIN and MAX will return an array of any corresponding objects. E.g the FeedItems with the MAX likeCount.
     * AVG, SUM, COUNT will return a JsonObject with the format of:
 
-```
-
+```javascript
 {
   "count": "<integer>",
   "results": [
@@ -186,8 +183,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
   * Non-grouped responses
 
-```
-
+```javascript
 {
   "avg":"<avgValue>"
 }
@@ -203,13 +199,11 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ###### Query Examples
 
-```
-
+```javascript
 {
   "field":"commentCount",
   "function":"MIN"
 }
-
 
 {
   "field":"likeCount",
@@ -243,8 +237,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
   * Available projection options are:
     * fields (String array of fields to project)
 
-```
-
+```javascript
 {
   "fields":["someField","someOtherField","someThirdField"]
 } 
@@ -252,8 +245,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ##### Examples
 
-```
-
+```javascript
 {
   "fields":["feedId"]
 }
@@ -292,8 +284,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ##### Query Examples
 
-```
-
+```javascript
 {
   "function":"COUNT",
   "groupBy": [
@@ -340,8 +331,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ##### Query Examples
 
-```
-
+```javascript
 {
   "models":["comments", "likes"]
 }
@@ -366,8 +356,7 @@ public class TestModelRESTController extends RestControllerImpl<TestModel> {
 
 ##### Query Examples
 
-```
-
+```javascript
 {
   "models":[
     {
