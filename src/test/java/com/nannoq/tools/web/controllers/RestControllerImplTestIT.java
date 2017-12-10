@@ -42,7 +42,6 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.apache.http.HttpHeaders;
 import org.junit.*;
@@ -54,7 +53,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -97,11 +95,9 @@ public class RestControllerImplTestIT {
     private RedisServer redisServer;
     private DynamoDBRepository<TestModel> repo;
     private TestModelRESTController controller;
+    private CrossModelAggregationController crossModelcontroller;
     private final String tableName = TestModel.class.getAnnotation(DynamoDBTable.class).tableName();
     private final Map<String, Class> testMap = Collections.singletonMap(tableName, TestModel.class);
-    private Function<RoutingContext, JsonObject> idSupplier = r -> new JsonObject()
-            .put("hash", r.request().getParam("hash"))
-            .put("range", r.request().getParam("range"));
 
     @Rule
     public TestName name = new TestName();
@@ -148,14 +144,15 @@ public class RestControllerImplTestIT {
                 try {
                     port = Integer.parseInt(System.getProperty("vertx.port"));
                     repo = new DynamoDBRepository<>(vertx, TestModel.class, config);
-                    controller = new TestModelRESTController(vertx, config, repo, idSupplier);
+                    controller = new TestModelRESTController(vertx, config, repo);
+                    crossModelcontroller = new CrossModelAggregationController(k -> repo, new Class[]{TestModel.class});
 
                     RestAssured.port = port;
                     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
                     Async httpAsync = testContext.async();
                     vertx.createHttpServer()
-                            .requestHandler(createRouter(controller)::accept)
+                            .requestHandler(createRouter(controller, crossModelcontroller)::accept)
                             .listen(port, listenRes -> httpAsync.complete());
                 } catch (Exception e) {
                     testContext.fail(e);
@@ -178,7 +175,8 @@ public class RestControllerImplTestIT {
         });
     }
 
-    private Router createRouter(TestModelRESTController controller) {
+    private Router createRouter(TestModelRESTController controller,
+                                CrossModelAggregationController crossModelcontroller) {
         Router router = Router.router(vertx);
 
         routeWithLogger(() -> router.get("/parent/:hash/testModels/:range"), route -> route.get().handler(controller::show));
@@ -186,6 +184,8 @@ public class RestControllerImplTestIT {
         routeWithBodyAndLogger(() -> router.post("/parent/:hash/testModels"), route -> route.get().handler(controller::create));
         routeWithBodyAndLogger(() -> router.put("/parent/:hash/testModels/:range"), route -> route.get().handler(controller::update));
         routeWithLogger(() -> router.delete("/parent/:hash/testModels/:range"), route -> route.get().handler(controller::destroy));
+
+        routeWithLogger(() -> router.get("/aggregations"), route -> route.get().handler(crossModelcontroller));
 
         return router;
     }
@@ -222,6 +222,7 @@ public class RestControllerImplTestIT {
 
             testModel.setSomeDate(new Date(randomEpochDay + 1000L));
             testModel.setSomeDateTwo(new Date(randomEpochDay));
+            testModel.setSomeLong(new Random().nextLong());
 
             items.add(testModel);
         });
@@ -336,6 +337,7 @@ public class RestControllerImplTestIT {
                 (pageToken != null ? (query != null ? "&" : "?") + "pageToken=" + pageToken : "");
 
         return given().
+                urlEncodingEnabled(false).
                 header(HttpHeaders.IF_NONE_MATCH, eTag != null ? eTag : "NoEtag").
             when().
                 get(url).
@@ -343,6 +345,21 @@ public class RestControllerImplTestIT {
                 statusCode(statusCode).
                     extract().
                         response();
+    }
+
+    @Test
+    public void aggregateIndex(TestContext testContext) {
+        Async async = testContext.async();
+
+        createXItems(100, res -> {
+            String query = "?aggregate=%7B%22function%22%3A%22MAX%22%2C%22field%22%3A%22someLong%22%2C%22groupBy%22%3A%5B%7B%22groupBy%22%3A%22someStringOne%22%7D%5D%7D";
+            final Response index = getIndex(null, null, 200, query);
+            String etag = index.header(HttpHeaders.ETAG);
+            testContext.assertEquals(etag, getIndex(null, null, 200, query).header(HttpHeaders.ETAG));
+            getIndex(etag, null, 304, query);
+
+            async.complete();
+        });
     }
 
     @Test

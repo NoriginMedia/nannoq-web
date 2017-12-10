@@ -39,18 +39,7 @@ import java.util.function.Function;
  * @version 17.11.2017
  */
 public class TestModelRESTController extends RestControllerImpl<TestModel> {
-    public TestModelRESTController(Vertx vertx, JsonObject appConfig, Repository<TestModel> repository,
-                                   Function<RoutingContext, JsonObject> idSupplier) {
-        super(vertx, TestModel.class, appConfig, repository, idSupplier, null);
-    }
-
-    @Override
-    public void postVerifyNotExists(TestModel newRecord, RoutingContext routingContext) {
-        final JsonObject id = getAndVerifyId(routingContext);
-
-        newRecord.setSomeStringOne(id.getString("hash"));
-        newRecord.setSomeStringTwo(UUID.randomUUID().toString());
-
-        super.postVerifyNotExists(newRecord, routingContext);
+    public TestModelRESTController(Vertx vertx, JsonObject appConfig, Repository<TestModel> repository) {
+        super(vertx, TestModel.class, appConfig, repository, null);
     }
 }

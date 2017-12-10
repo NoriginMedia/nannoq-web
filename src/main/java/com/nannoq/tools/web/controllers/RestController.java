@@ -55,7 +55,7 @@ import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONT
  * @author Anders Mikkelsen
  * @version 17.11.2017
  */
-public interface RestController<E extends ETagable & Model & Cacheable> {
+public interface RestController<E extends ETagable & Model> {
     default void show(RoutingContext routingContext) {
         try {
             preShow(routingContext);
@@ -138,30 +138,30 @@ public interface RestController<E extends ETagable & Model & Cacheable> {
     void processQuery(RoutingContext routingContext, Map<String, List<String>> queryMap);
 
     default void postProcessQuery(RoutingContext routingContext, AggregateFunction aggregateFunction,
-                                  Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                                  Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                                   @Nonnull String[] projections, String indexName, Integer limit) {
         postPrepareQuery(routingContext, aggregateFunction, orderByQueue, params, projections, indexName, limit);
     }
 
     default void postPrepareQuery(RoutingContext routingContext, AggregateFunction aggregateFunction,
-                                  Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                                  Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                                   String[] projections, String indexName, Integer limit) {
         createIdObjectForIndex(routingContext, aggregateFunction, orderByQueue, params, projections, indexName, limit);
     }
 
     void createIdObjectForIndex(RoutingContext routingContext, AggregateFunction aggregateFunction,
-                                Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                                Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                                 String[] projections, String indexName, Integer limit);
 
     void performIndex(RoutingContext routingContext, JsonObject identifiers, AggregateFunction aggregateFunction,
-                      Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                      Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                       String[] projections, String indexName, Integer limit);
 
     void proceedWithPagedIndex(JsonObject id, String pageToken,
-                               QueryPack<E> queryPack, String[] projections, RoutingContext routingContext);
+                               QueryPack queryPack, String[] projections, RoutingContext routingContext);
 
     void proceedWithAggregationIndex(RoutingContext routingContext, String etag, JsonObject id,
-                                     QueryPack<E> queryPack, String[] projections);
+                                     QueryPack queryPack, String[] projections);
 
     default void postIndex(RoutingContext routingContext, @Nonnull ItemList<E> items, @Nonnull String[] projections) {
         long initialNanoTime = routingContext.get(REQUEST_PROCESS_TIME_TAG);
@@ -231,8 +231,14 @@ public interface RestController<E extends ETagable & Model & Cacheable> {
     void verifyNotExists(E newRecord, RoutingContext routingContext);
 
     default void postVerifyNotExists(E newRecord, RoutingContext routingContext) {
-        preSanitizeForCreate(newRecord, routingContext);
+        preSetIdentifiers(newRecord, routingContext);
     }
+
+    default void preSetIdentifiers(E newRecord, RoutingContext routingContext) {
+        setIdentifiers(newRecord, routingContext);
+    }
+
+    void setIdentifiers(E newRecord, RoutingContext routingContext);
 
     default void preSanitizeForCreate(E record, RoutingContext routingContext) {
         performSanitizeForCreate(record, routingContext);

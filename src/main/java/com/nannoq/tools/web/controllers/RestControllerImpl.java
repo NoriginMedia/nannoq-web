@@ -38,9 +38,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.*;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -54,6 +54,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
 import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.PAGINATION_INDEX;
+import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.initializeDynamoDb;
 import static com.nannoq.tools.repository.repository.redis.RedisUtils.getRedisClient;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MAX;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MIN;
@@ -71,7 +72,7 @@ import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONT
  * @version 17.11.2017
  */
 public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable> implements RestController<E> {
-    static final Logger logger = LogManager.getLogger(RestControllerImpl.class.getSimpleName());
+    static final Logger logger = LoggerFactory.getLogger(RestControllerImpl.class.getSimpleName());
 
     public static final String PROJECTION_KEY = "projection";
     public static final String PROJECTION_FIELDS_KEY = "fields";
@@ -88,7 +89,40 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
     protected final Class<E> TYPE;
     protected final String COLLECTION;
     protected final Function<RoutingContext, JsonObject> idSupplier;
+    private static final Function<RoutingContext, JsonObject> defaultSupplier = r -> {
+        JsonObject ids = new JsonObject();
+
+        r.pathParams().forEach(ids::put);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Identifiers are: " + ids.encodePrettily());
+        }
+
+        return ids;
+    };
+
     protected final ETagManager<E> eTagManager;
+
+    private Field[] fields;
+    private Method[] methods;
+
+    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository) {
+        this(Vertx.currentContext().owner(), type, appConfig, repository, defaultSupplier, null);
+    }
+
+    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository) {
+        this(vertx, type, appConfig, repository, defaultSupplier, null);
+    }
+
+    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
+                                 @Nullable ETagManager<E> eTagManager) {
+        this(Vertx.currentContext().owner(), type, appConfig, repository, defaultSupplier, eTagManager);
+    }
+
+    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
+                                 @Nullable ETagManager<E> eTagManager) {
+        this(vertx, type, appConfig, repository, defaultSupplier, eTagManager);
+    }
 
     protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier) {
@@ -108,6 +142,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
         this.REPOSITORY = repository;
         this.TYPE = type;
         this.COLLECTION = buildCollectionName(type.getName());
+        fields = getAllFieldsOnType(TYPE);
+        methods = getAllMethodsOnType(TYPE);
 
         if (eTagManager != null) {
             this.eTagManager = eTagManager;
@@ -245,7 +281,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
     public void processQuery(RoutingContext routingContext, Map<String, List<String>> queryMap) {
         JsonObject errors = new JsonObject();
         AggregateFunction aggregateFunction = null;
-        Map<String, List<FilterParameter<E>>> params = new ConcurrentHashMap<>();
+        Map<String, List<FilterParameter>> params = new ConcurrentHashMap<>();
         Queue<OrderByParameter> orderByQueue = new ConcurrentLinkedQueue<>();
         final List<String> aggregateQuery = queryMap.get(AGGREGATE_KEY);
         final String[] indexName = {PAGINATION_INDEX};
@@ -277,8 +313,6 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
         queryMap.remove(PAGING_TOKEN_KEY);
         queryMap.remove(AGGREGATE_KEY);
-        Field[] fields = getAllFieldsOnType(TYPE);
-        Method[] methods = getAllMethodsOnType(TYPE);
 
         if (aggregateQuery != null && aggregateFunction == null) {
             String aggregateJson = aggregateQuery.get(0);
@@ -342,7 +376,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     @Override
     public void createIdObjectForIndex(RoutingContext routingContext, AggregateFunction aggregateFunction,
-                                       Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                                       Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                                        String[] projections, String indexName, Integer limit) {
         JsonObject id = getAndVerifyId(routingContext);
 
@@ -351,11 +385,10 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     @Override
     public void performIndex(RoutingContext routingContext, JsonObject identifiers, AggregateFunction aggregateFunction,
-                             Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter<E>>> params,
+                             Queue<OrderByParameter> orderByQueue, Map<String, List<FilterParameter>> params,
                              String[] projections, String indexName, Integer limit) {
         long initialProcessNanoTime = routingContext.get(CONTROLLER_START_TIME);
         HttpServerRequest request = routingContext.request();
-        String query = routingContext.request().query();
         String pageToken = request.getParam(PAGING_TOKEN_KEY);
         String etag = request.getHeader(HttpHeaders.IF_NONE_MATCH);
 
@@ -402,15 +435,14 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
                 setStatusCodeAndAbort(400, routingContext, initialProcessNanoTime);
             } else {
-                final String finalQuery = query == null ? null : String.valueOf(query.hashCode());
-                final String route = request.path();
-                QueryPack<E> queryPack = QueryPack.<E>builder()
-                        .withQuery(finalQuery)
-                        .withRoute(route)
+                QueryPack queryPack = QueryPack.builder(TYPE)
+                        .withRoutingContext(routingContext)
+                        .withPageToken(pageToken)
                         .withRequestEtag(etag)
                         .withOrderByQueue(orderByQueue)
                         .withFilterParameters(params)
                         .withAggregateFunction(aggregateFunction)
+                        .withProjections(projections)
                         .withIndexName(indexName)
                         .withLimit(limit)
                         .build();
@@ -423,6 +455,8 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                     String etagKey = queryPack.getBaseEtagKey();
 
                     if (logger.isDebugEnabled()) {
+                        logger.debug("EtagKey is: " + etagKey);
+
                         addLogMessageToRequestLog(routingContext, "Querypack ok, fetching etag for " + etagKey);
                     }
 
@@ -447,7 +481,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     @Override
     public void proceedWithPagedIndex(JsonObject id, String pageToken,
-                                      QueryPack<E> queryPack, String[] projections, RoutingContext routingContext) {
+                                      QueryPack queryPack, String[] projections, RoutingContext routingContext) {
         REPOSITORY.readAll(id, pageToken, queryPack, projections, readResult -> {
             if (readResult.failed()) {
                 addLogMessageToRequestLog(routingContext, "FAILED: " + (readResult.result() == null ?
@@ -483,33 +517,34 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
 
     @Override
     public void proceedWithAggregationIndex(RoutingContext routingContext, String etag, JsonObject id,
-                                            QueryPack<E> queryPack, String[] projections) {
+                                            QueryPack queryPack, String[] projections) {
         if (logger.isDebugEnabled()) {
             addLogMessageToRequestLog(routingContext, "Started aggregation request");
         }
 
         AggregateFunction function = queryPack.getAggregateFunction();
         String etagKey = null;
+        int hashCode = function.getGroupBy() == null ? 0 : function.getGroupBy().hashCode();
 
         switch (function.getFunction()) {
             case MIN:
-                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_MIN" + function.getGroupBy().hashCode();
+                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_MIN" + hashCode;
 
                 break;
             case MAX:
-                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_MAX" + function.getGroupBy().hashCode();
+                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_MAX" + hashCode;
 
                 break;
             case AVG:
-                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_AVG" + function.getGroupBy().hashCode();
+                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_AVG" + hashCode;
 
                 break;
             case SUM:
-                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_SUM" + function.getGroupBy().hashCode();
+                etagKey = queryPack.getBaseEtagKey() + "_" + function.getField() + "_SUM" + hashCode;
 
                 break;
             case COUNT:
-                etagKey = queryPack.getBaseEtagKey() + "_COUNT" + function.getGroupBy().hashCode();
+                etagKey = queryPack.getBaseEtagKey() + "_COUNT" + hashCode;
 
                 break;
         }
@@ -533,7 +568,7 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
     }
 
     protected void doAggregation(RoutingContext routingContext, JsonObject id,
-                                 QueryPack<E> queryPack, String[] projections) {
+                                 QueryPack queryPack, String[] projections) {
         REPOSITORY.aggregation(id, queryPack, projections, readResult -> {
             if (readResult.failed()) {
                 addLogMessageToRequestLog(routingContext,
@@ -556,6 +591,13 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
                 }
             }
         });
+    }
+
+    @Override
+    public void setIdentifiers(E newRecord, RoutingContext routingContext) {
+        newRecord.setIdentifiers(getAndVerifyId(routingContext));
+        
+        preSanitizeForCreate(newRecord, routingContext);
     }
 
     @Override
@@ -593,14 +635,15 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
             E e = TYPE.newInstance();
 
             if (e == null) {
-                setStatusCodeAndAbort(422, routingContext, initialProcessNanoTime);
-            } else {
-                e.setInitialValues(newRecord);
+                logger.error("Could not instantiate object of type: " + TYPE.getSimpleName());
 
+                setStatusCodeAndAbort(500, routingContext, initialProcessNanoTime);
+            } else {
                 REPOSITORY.read(id, readResult -> {
                     if (readResult.succeeded()) {
                         setStatusCodeAndAbort(409, routingContext, initialProcessNanoTime);
                     } else {
+                        e.setInitialValues(newRecord);
                         postVerifyNotExists(e, routingContext);
                     }
                 });

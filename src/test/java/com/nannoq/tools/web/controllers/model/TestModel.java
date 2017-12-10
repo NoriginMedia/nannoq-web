@@ -32,10 +32,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.PAGINATION_INDEX;
 
@@ -66,6 +63,14 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
 
     public TestModel() {
 
+    }
+
+    @Override
+    public TestModel setIdentifiers(JsonObject identifiers) {
+        String range = identifiers.getString("range");
+
+        return setHash(identifiers.getString("hash"))
+                .setRange(range != null ? range : UUID.randomUUID().toString());
     }
 
     @DynamoDBHashKey
@@ -240,7 +245,7 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
 
     @Override
     @Fluent
-    public DynamoDBModel setHash(String hash) {
+    public TestModel setHash(String hash) {
         someStringOne = hash;
 
         return this;
@@ -248,7 +253,7 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
 
     @Override
     @Fluent
-    public DynamoDBModel setRange(String range) {
+    public TestModel setRange(String range) {
         someStringTwo = range;
 
         return this;
@@ -275,7 +280,7 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
     }
 
     @Override
-    public Model sanitize() {
+    public TestModel sanitize() {
         return this;
     }
 
@@ -295,7 +300,7 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
     }
 
     @Override
-    public Model setCreatedAt(Date date) {
+    public TestModel setCreatedAt(Date date) {
         createdAt = date;
 
         return this;
@@ -307,14 +312,14 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
     }
 
     @Override
-    public Model setUpdatedAt(Date date) {
+    public TestModel setUpdatedAt(Date date) {
         updatedAt = date;
 
         return this;
     }
 
     @Override
-    public Model setInitialValues(Model record) {
+    public TestModel setInitialValues(Model record) {
         if (record instanceof TestModel) {
             TestModel testModel = (TestModel) record;
 
@@ -326,7 +331,7 @@ public class TestModel implements DynamoDBModel, Model, ETagable, Cacheable {
     }
 
     @Override
-    public Model setModifiables(Model record) {
+    public TestModel setModifiables(Model record) {
         if (record instanceof TestModel) {
             TestModel testModel = (TestModel) record;
 
