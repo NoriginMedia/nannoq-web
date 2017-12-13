@@ -25,6 +25,7 @@
 
 package com.nannoq.tools.web.controllers;
 
+import com.nannoq.tools.repository.dynamodb.DynamoDBRepository;
 import com.nannoq.tools.repository.models.Cacheable;
 import com.nannoq.tools.repository.models.ETagable;
 import com.nannoq.tools.repository.models.Model;
@@ -71,7 +72,8 @@ import static com.nannoq.tools.web.responsehandlers.ResponseLogHandler.BODY_CONT
  * @author Anders Mikkelsen
  * @version 17.11.2017
  */
-public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable> implements RestController<E> {
+@SuppressWarnings("WeakerAccess")
+public class RestControllerImpl<E extends ETagable & Model & Cacheable> implements RestController<E> {
     static final Logger logger = LoggerFactory.getLogger(RestControllerImpl.class.getSimpleName());
 
     public static final String PROJECTION_KEY = "projection";
@@ -106,36 +108,36 @@ public abstract class RestControllerImpl<E extends ETagable & Model & Cacheable>
     private Field[] fields;
     private Method[] methods;
 
-    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository) {
+    public RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository) {
         this(Vertx.currentContext().owner(), type, appConfig, repository, defaultSupplier, null);
     }
 
-    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository) {
+    public RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository) {
         this(vertx, type, appConfig, repository, defaultSupplier, null);
     }
 
-    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
+    public RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  @Nullable ETagManager<E> eTagManager) {
         this(Vertx.currentContext().owner(), type, appConfig, repository, defaultSupplier, eTagManager);
     }
 
-    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
+    public RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  @Nullable ETagManager<E> eTagManager) {
         this(vertx, type, appConfig, repository, defaultSupplier, eTagManager);
     }
 
-    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
+    public RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier) {
         this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier, null);
     }
 
-    protected RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
+    public RestControllerImpl(Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier,
                                  @Nullable ETagManager<E> eTagManager) {
         this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier, eTagManager);
     }
 
-    protected RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
+    public RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
                                  Function<RoutingContext, JsonObject> idSupplier,
                                  @Nullable ETagManager<E> eTagManager) {
         this.idSupplier = idSupplier;

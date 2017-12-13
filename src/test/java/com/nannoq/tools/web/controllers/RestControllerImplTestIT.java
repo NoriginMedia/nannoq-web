@@ -24,6 +24,9 @@
 
 package com.nannoq.tools.web.controllers;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.hazelcast.config.Config;
@@ -94,7 +97,7 @@ public class RestControllerImplTestIT {
     private int port;
     private RedisServer redisServer;
     private DynamoDBRepository<TestModel> repo;
-    private TestModelRESTController controller;
+    private RestControllerImpl<TestModel> controller;
     private CrossModelAggregationController crossModelcontroller;
     private final String tableName = TestModel.class.getAnnotation(DynamoDBTable.class).tableName();
     private final Map<String, Class> testMap = Collections.singletonMap(tableName, TestModel.class);
@@ -144,7 +147,7 @@ public class RestControllerImplTestIT {
                 try {
                     port = Integer.parseInt(System.getProperty("vertx.port"));
                     repo = new DynamoDBRepository<>(vertx, TestModel.class, config);
-                    controller = new TestModelRESTController(vertx, config, repo);
+                    controller = new RestControllerImpl<>(vertx, TestModel.class, config, repo);
                     crossModelcontroller = new CrossModelAggregationController(k -> repo, new Class[]{TestModel.class});
 
                     RestAssured.port = port;
@@ -175,7 +178,7 @@ public class RestControllerImplTestIT {
         });
     }
 
-    private Router createRouter(TestModelRESTController controller,
+    private Router createRouter(RestControllerImpl<TestModel> controller,
                                 CrossModelAggregationController crossModelcontroller) {
         Router router = Router.router(vertx);
 
@@ -192,8 +195,9 @@ public class RestControllerImplTestIT {
 
     @After
     public void tearDown() {
-        final AmazonDynamoDBAsyncClient amazonDynamoDBAsyncClient = new AmazonDynamoDBAsyncClient();
-        amazonDynamoDBAsyncClient.withEndpoint(config.getString("dynamo_endpoint"));
+        final AmazonDynamoDBAsync amazonDynamoDBAsyncClient = AmazonDynamoDBAsyncClient.asyncBuilder()
+                .withEndpointConfiguration(new EndpointConfiguration(config.getString("dynamo_endpoint"), "eu-west-1"))
+                .build();
         amazonDynamoDBAsyncClient.deleteTable(tableName);
 
         repo = null;
