@@ -32,6 +32,7 @@ import com.nannoq.tools.repository.models.Model;
 import com.nannoq.tools.repository.models.ModelUtils;
 import com.nannoq.tools.repository.repository.Repository;
 import com.nannoq.tools.repository.repository.etag.ETagManager;
+import com.nannoq.tools.repository.repository.etag.InMemoryEtagManagerImpl;
 import com.nannoq.tools.repository.repository.etag.RedisETagManagerImpl;
 import com.nannoq.tools.repository.repository.results.*;
 import com.nannoq.tools.repository.utils.*;
@@ -152,7 +153,7 @@ public class RestControllerImpl<E extends ETagable & Model & Cacheable> implemen
         } else if (appConfig.getString("redis_host") != null) {
             this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(vertx, appConfig));
         } else {
-            this.eTagManager = null;
+            this.eTagManager = new InMemoryEtagManagerImpl<>(vertx, TYPE);
         }
     }
 
