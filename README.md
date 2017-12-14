@@ -2,6 +2,18 @@
 
 nannoq-web is a REST (Level 3) controller implementation that is based on vertx-web and leverages [nannoq-repository](https://github.com/mikand13/nannoq-repository) for data store access.
 
+It incorporates:
+ - ETag
+ - Clustered Caching through nannoq-repository
+
+It supports:
+ - Filtering
+ - Ordering
+ - Projections
+ - Grouping
+ - Aggregations
+ - Cross-Model Aggregations
+
 ## Prerequisites
 
 Vert.x >= 3.5.0
@@ -9,6 +21,8 @@ Vert.x >= 3.5.0
 Java >= 1.8
 
 Maven
+
+[nannoq-repository](https://github.com/mikand13/nannoq-repository)
 
 ## Installing
 
@@ -42,9 +56,9 @@ dependencies {
 }
 ```
 
-### Querying
+### Implementation and Querying
 
-Please consult the [Wiki](https://github.com/mikand13/nannoq-web/wiki) for guides on querying the controller.
+Please consult the [Wiki](https://github.com/mikand13/nannoq-web/wiki) for guides on implementations and queries on the controller.
 
 ## Contributing
 
