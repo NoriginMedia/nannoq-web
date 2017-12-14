@@ -138,9 +138,10 @@ public class RestControllerImpl<E extends ETagable & Model & Cacheable> implemen
         this(Vertx.currentContext().owner(), type, appConfig, repository, idSupplier, eTagManager);
     }
 
+    @SuppressWarnings("unchecked")
     public RestControllerImpl(Vertx vertx, Class<E> type, JsonObject appConfig, Repository<E> repository,
-                                 Function<RoutingContext, JsonObject> idSupplier,
-                                 @Nullable ETagManager<E> eTagManager) {
+                              Function<RoutingContext, JsonObject> idSupplier,
+                              @Nullable ETagManager<E> eTagManager) {
         this.idSupplier = idSupplier;
         this.REPOSITORY = repository;
         this.TYPE = type;
@@ -148,8 +149,12 @@ public class RestControllerImpl<E extends ETagable & Model & Cacheable> implemen
         fields = getAllFieldsOnType(TYPE);
         methods = getAllMethodsOnType(TYPE);
 
+        ETagManager eTagManagerRepo = repository.getEtagManager();
+
         if (eTagManager != null) {
             this.eTagManager = eTagManager;
+        } else if (eTagManagerRepo != null) {
+            this.eTagManager = eTagManagerRepo;
         } else if (appConfig.getString("redis_host") != null) {
             this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(vertx, appConfig));
         } else {
