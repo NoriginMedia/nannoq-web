@@ -1,6 +1,6 @@
 # Nannoq Web
 
-nannoq-web is a REST (Level 3) controller implementation that is based on vertx-web and leverages [nannoq-repository](https://github.com/mikand13/nannoq-repository) for data store access.
+nannoq-web is a REST (Level 3) controller implementation that is based on vertx-web and leverages [nannoq-repository](https://github.com/NoriginMedia/nannoq-repository) for data store access.
 
 It incorporates:
  - ETag
@@ -22,7 +22,7 @@ Java >= 1.8
 
 Maven
 
-[nannoq-repository](https://github.com/mikand13/nannoq-repository)
+[nannoq-repository](https://github.com/NoriginMedia/nannoq-repository)
 
 ## Installing
 
@@ -58,22 +58,22 @@ dependencies {
 
 ### Implementation and Querying
 
-Please consult the [Wiki](https://github.com/mikand13/nannoq-web/wiki) for guides on implementations and queries on the controller.
+Please consult the [Wiki](https://github.com/NoriginMedia/nannoq-web/wiki) for guides on implementations and queries on the controller.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/mikand13/nannoq-web/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/NoriginMedia/nannoq-web/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/mikand13/nannoq-web/tags)
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/NoriginMedia/nannoq-web/tags)
 
 ## Authors
 
 * **Anders Mikkelsen** - *Initial work* - [Norigin Media](http://noriginmedia.com/)
 
-See also the list of [contributors](https://github.com/mikand13/nannoq-web/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/NoriginMedia/nannoq-web/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/mikand13/nannoq-web/blob/master/LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/NoriginMedia/nannoq-web/blob/master/LICENSE) file for details

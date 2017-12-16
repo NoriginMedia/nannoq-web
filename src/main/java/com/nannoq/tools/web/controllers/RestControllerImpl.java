@@ -25,14 +25,13 @@
 
 package com.nannoq.tools.web.controllers;
 
-import com.nannoq.tools.repository.dynamodb.DynamoDBRepository;
 import com.nannoq.tools.repository.models.Cacheable;
 import com.nannoq.tools.repository.models.ETagable;
 import com.nannoq.tools.repository.models.Model;
 import com.nannoq.tools.repository.models.ModelUtils;
 import com.nannoq.tools.repository.repository.Repository;
 import com.nannoq.tools.repository.repository.etag.ETagManager;
-import com.nannoq.tools.repository.repository.etag.InMemoryEtagManagerImpl;
+import com.nannoq.tools.repository.repository.etag.InMemoryETagManagerImpl;
 import com.nannoq.tools.repository.repository.etag.RedisETagManagerImpl;
 import com.nannoq.tools.repository.repository.results.*;
 import com.nannoq.tools.repository.utils.*;
@@ -158,7 +157,7 @@ public class RestControllerImpl<E extends ETagable & Model & Cacheable> implemen
         } else if (appConfig.getString("redis_host") != null) {
             this.eTagManager = new RedisETagManagerImpl<>(TYPE, getRedisClient(vertx, appConfig));
         } else {
-            this.eTagManager = new InMemoryEtagManagerImpl<>(vertx, TYPE);
+            this.eTagManager = new InMemoryETagManagerImpl<>(vertx, TYPE);
         }
     }
 

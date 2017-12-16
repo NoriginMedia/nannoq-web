@@ -15,7 +15,7 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A REST controller implementation that leverages nannoq-repository and Vert.x Web.</description>
-    <url>https://github.com/AspiroTV/nannoq-web</url>
+    <url>https://github.com/NoriginMedia/nannoq-web</url>
 
     <licenses>
         <license>
@@ -34,9 +34,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/AspiroTV/nannoq-web.git</connection>
-        <developerConnection>scm:git:ssh://github.com:AspiroTV/nannoq-web.git</developerConnection>
-        <url>https://github.com/mikand13/nannoq-web/tree/master</url>
+        <connection>scm:git:git://github.com/NoriginMedia/nannoq-web.git</connection>
+        <developerConnection>scm:git:ssh://github.com:NoriginMedia/nannoq-web.git</developerConnection>
+        <url>https://github.com/NoriginMedia/nannoq-web/tree/master</url>
     </scm>
 
     <properties>
