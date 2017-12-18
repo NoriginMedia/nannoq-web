@@ -24,7 +24,6 @@
 
 package com.nannoq.tools.web.controllers;
 
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
@@ -33,7 +32,6 @@ import com.hazelcast.config.Config;
 import com.nannoq.tools.repository.dynamodb.DynamoDBRepository;
 import com.nannoq.tools.repository.repository.results.CreateResult;
 import com.nannoq.tools.web.controllers.model.TestModel;
-import com.nannoq.tools.web.controllers.repositories.TestModelRESTController;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.vertx.core.*;
@@ -64,8 +62,6 @@ import static com.nannoq.tools.web.RoutingHelper.routeWithLogger;
 import static io.restassured.RestAssured.given;
 import static java.util.stream.Collectors.toList;
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertNotEquals;
 
 /**

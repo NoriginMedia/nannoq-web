@@ -28,6 +28,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBVersionAttribute;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nannoq.tools.repository.models.ETagable;
+
 import java.util.Objects;
 
 /**

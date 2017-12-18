@@ -55,7 +55,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
 import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.PAGINATION_INDEX;
-import static com.nannoq.tools.repository.dynamodb.DynamoDBRepository.initializeDynamoDb;
 import static com.nannoq.tools.repository.repository.redis.RedisUtils.getRedisClient;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MAX;
 import static com.nannoq.tools.repository.utils.AggregateFunctions.MIN;

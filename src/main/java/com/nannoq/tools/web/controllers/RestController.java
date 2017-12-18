@@ -25,7 +25,10 @@
 
 package com.nannoq.tools.web.controllers;
 
-import com.nannoq.tools.repository.models.*;
+import com.nannoq.tools.repository.models.ETagable;
+import com.nannoq.tools.repository.models.Model;
+import com.nannoq.tools.repository.models.ModelUtils;
+import com.nannoq.tools.repository.models.ValidationError;
 import com.nannoq.tools.repository.utils.*;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.Json;

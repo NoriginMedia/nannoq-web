@@ -29,10 +29,6 @@ import com.nannoq.tools.web.controllers.RestControllerImpl;
 import com.nannoq.tools.web.controllers.model.TestModel;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
-
-import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * @author Anders Mikkelsen
