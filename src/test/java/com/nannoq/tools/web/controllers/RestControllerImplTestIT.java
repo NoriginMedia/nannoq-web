@@ -210,7 +210,7 @@ public class RestControllerImplTestIT {
         List<Future> futures = new CopyOnWriteArrayList<>();
 
         IntStream.range(0, count).forEach(i -> {
-            TestModel testModel = (TestModel) nonNullTestModel.get().setRange(UUID.randomUUID().toString());
+            TestModel testModel = nonNullTestModel.get().setRange(UUID.randomUUID().toString());
 
             LocalDate startDate = LocalDate.of(1990, 1, 1);
             LocalDate endDate = LocalDate.now();
