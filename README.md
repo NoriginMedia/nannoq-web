@@ -1,6 +1,6 @@
 # Nannoq Web
 
-[![Build Status](https://www.tomrom.net/buildStatus/icon?job=nannoq-web/develop)](https://www.tomrom.net/job/nannoq-web/job/develop/)
+[![Build Status](https://www.tomrom.net/buildStatus/icon?job=nannoq-tools/master)](https://www.tomrom.net/job/nannoq-tools/job/master/)
 
 nannoq-web is a REST (Level 3) controller implementation that is based on vertx-web and leverages [nannoq-repository](https://github.com/NoriginMedia/nannoq-repository) for data store access.
 
@@ -43,40 +43,18 @@ mvn clean verify -Dgpg.skip=true
 First install with either Maven:
 
 ```xml
-<repositories>
-    <repository>
-        <id>ossrh</id>
-        <name>OSSRH Snapshots</name>
-        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-
-        <releases>
-            <enabled>false</enabled>
-        </releases>
-
-        <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-        </snapshots>
-    </repository>
-</repositories>
-
 <dependency>
     <groupId>com.nannoq</groupId>
     <artifactId>web</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
 or Gradle:
 
 ```groovy
-repositories {
-    maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
-}
-
 dependencies {
-    compile group: 'nannoq.com:web:1.0.2-SNAPSHOT'
+    compile group: 'nannoq.com:web:1.0.2'
 }
 ```
 
