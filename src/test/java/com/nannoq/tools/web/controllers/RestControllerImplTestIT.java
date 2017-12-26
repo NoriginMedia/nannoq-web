@@ -41,6 +41,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
@@ -100,6 +101,9 @@ public class RestControllerImplTestIT {
 
     @Rule
     public TestName name = new TestName();
+    
+    @Rule
+    public RunTestOnContext rule = new RunTestOnContext(new VertxOptions().setMaxEventLoopExecuteTime(Long.MAX_VALUE));
 
     @SuppressWarnings("Duplicates")
     @BeforeClass
