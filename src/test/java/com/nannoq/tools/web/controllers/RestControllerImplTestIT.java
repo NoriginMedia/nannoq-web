@@ -41,6 +41,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
@@ -100,6 +101,11 @@ public class RestControllerImplTestIT {
 
     @Rule
     public TestName name = new TestName();
+    
+    @Rule
+    public RunTestOnContext rule = new RunTestOnContext(new VertxOptions()
+            .setMaxEventLoopExecuteTime(Long.MAX_VALUE)
+            .setMaxWorkerExecuteTime(Long.MAX_VALUE));
 
     @SuppressWarnings("Duplicates")
     @BeforeClass
@@ -295,7 +301,7 @@ public class RestControllerImplTestIT {
     public void index(TestContext testContext) {
         Async async = testContext.async();
 
-        createXItems(25, createRes -> vertx.executeBlocking(fut -> {
+        createXItems(25, createRes -> rule.vertx().executeBlocking(fut -> {
             try {
                 Response response = getIndex(null, null, 200);
                 getIndex(response.header(HttpHeaders.ETAG), null, 304);
@@ -351,15 +357,25 @@ public class RestControllerImplTestIT {
     public void aggregateIndex(TestContext testContext) {
         Async async = testContext.async();
 
-        createXItems(100, res -> {
-            String query = "?aggregate=%7B%22function%22%3A%22MAX%22%2C%22field%22%3A%22someLong%22%2C%22groupBy%22%3A%5B%7B%22groupBy%22%3A%22someStringOne%22%7D%5D%7D";
-            final Response index = getIndex(null, null, 200, query);
-            String etag = index.header(HttpHeaders.ETAG);
-            testContext.assertEquals(etag, getIndex(null, null, 200, query).header(HttpHeaders.ETAG));
-            getIndex(etag, null, 304, query);
+        createXItems(100, createRes -> rule.vertx().executeBlocking(fut -> {
+            try {
+                String query = "?aggregate=%7B%22function%22%3A%22MAX%22%2C%22field%22%3A%22someLong%22%2C%22groupBy%22%3A%5B%7B%22groupBy%22%3A%22someStringOne%22%7D%5D%7D";
+                final Response index = getIndex(null, null, 200, query);
+                String etag = index.header(HttpHeaders.ETAG);
+                testContext.assertEquals(etag, getIndex(null, null, 200, query).header(HttpHeaders.ETAG));
+                getIndex(etag, null, 304, query);
 
-            async.complete();
-        });
+                async.complete();
+            } catch (Exception e) {
+                testContext.fail(e);
+            }
+        }, false, res -> {
+            if (res.failed()) {
+                testContext.fail(res.cause());
+            } else {
+                async.complete();
+            }
+        }));
     }
 
     @Test
