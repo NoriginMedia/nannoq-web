@@ -46,7 +46,7 @@ First install with either Maven:
 <dependency>
     <groupId>com.nannoq</groupId>
     <artifactId>web</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -54,7 +54,7 @@ or Gradle:
 
 ```groovy
 dependencies {
-    compile group: 'nannoq.com:web:1.0.2'
+    compile group: 'nannoq.com:web:1.0.4’
 }
 ```
 
