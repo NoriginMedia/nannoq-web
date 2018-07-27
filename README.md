@@ -1,3 +1,6 @@
+# DISCONTINUED JAVA LEGACY - Use Kotlin version @ [Nannoq-Tools](https://github.com/NoriginMedia/nannoq-tools)
+
+
 # Nannoq Web
 
 [![Build Status](https://www.tomrom.net/buildStatus/icon?job=nannoq-tools/master)](https://www.tomrom.net/job/nannoq-tools/job/master/)
